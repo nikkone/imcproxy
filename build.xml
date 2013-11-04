@@ -1,0 +1,47 @@
+<project name="ImcProxy" default="dist">
+  
+	<path id="all.libs">
+		<fileset dir="lib" casesensitive="false">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	
+	<target name="compile">
+  		<mkdir dir="build"/>
+		<delete dir="build"/>
+		<mkdir dir="build"/>
+		<javac encoding="UTF-8" srcdir="src"  destdir="build" target="1.7" source="1.7" includes="**/*.java" fork="false" classpath="${toString:all.libs}">     
+		</javac>
+	</target>	
+	
+	<target name="server.jar" depends="compile">
+		<unzip dest="build">
+			<fileset dir="lib" casesensitive="false">
+			 	<include name="**/*.jar" />
+			</fileset>
+		</unzip>
+		<delete dir="build/META-INF"/>
+		<jar destfile="server.jar" basedir="build" index="true">
+			<manifest>
+				<attribute name="Main-Class" value="pt.lsts.imc.ImcProxyServer"/>
+			</manifest>
+		</jar>
+	</target>
+	
+	<target name="client.jar" depends="compile">
+		<unzip dest="build">
+			<fileset dir="lib" casesensitive="false">
+				<include name="**/*.jar" />
+			</fileset>
+		</unzip>
+		<delete dir="build/META-INF"/>
+		<jar destfile="client.jar" basedir="build" index="true">
+			<manifest>
+				<attribute name="Main-Class" value="pt.lsts.imc.ImcProxyClient"/>
+			</manifest>
+		</jar>
+	</target>
+	
+	<target name="dist" depends="client.jar,server.jar"/>
+	
+</project>
