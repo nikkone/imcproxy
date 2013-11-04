@@ -7,6 +7,7 @@ import java.net.NetworkInterface;
 import java.net.URI;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
+import java.util.Vector;
 
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
@@ -49,7 +50,7 @@ public class ImcProxyClient extends ImcClientSocket {
         			if (info.getPublisher().equals("127.0.0.1")) // ignore announces from loopback
         				return;	
         			String[] services = ((Announce)msg).getServices().split(";");
-        			((Announce)msg).setServices(""); // remove all services present in the message
+        			
         			for (String s : services) {
         				if (s.startsWith("imc+udp://")) {
         					String[] parts = s.replaceAll("/", "").split(":");
@@ -90,9 +91,17 @@ public class ImcProxyClient extends ImcClientSocket {
 				UDPTransport transport = createImcUdpHost(7000);
 				transport.setImcId(imcid);
 				remoteImcHosts.put(imcid, transport);
-				//System.out.println(" new host @ imc+udp://localhost:"+transport.getBindPort()+"/");
 				imcToPort.put(imcid, transport.getBindPort());
 				portToImc.put(transport.getBindPort(), imcid);
+			}
+			String[] services = msg.getString("services").split(";");
+			Vector<String> udpServices = new Vector<>();
+			
+			for (String service : services) {
+				if (service.startsWith("imc+udp://")) {
+					service = service.substring(10);
+					udpServices.add(service.substring(service.indexOf('/')));
+				}
 			}
 			try {
 				int port = remoteImcHosts.get(imcid).getBindPort();
@@ -107,10 +116,12 @@ public class ImcProxyClient extends ImcClientSocket {
 	                	InetAddress i= ee.nextElement();
 	                	if (!(i instanceof Inet4Address))
 	                		continue;
-	                    if (serv.isEmpty())
-	                    	serv = "imc+udp://"+i.getHostAddress()+":"+port+"/";
-	                    else
-	                    	serv = serv+";imc+udp://"+i.getHostAddress()+":"+port+"/";	                    	
+	                	
+	                	for (String path : udpServices) {
+	                		if (!serv.isEmpty())
+	                			serv += ";";
+	                		serv += "imc+udp://"+i.getHostAddress()+":"+port+path;
+	                	}
 	                }
 	            }
 				msg.setValue("services", serv);
