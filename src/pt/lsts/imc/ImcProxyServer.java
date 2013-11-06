@@ -16,10 +16,6 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.jetty.websocket.server.WebSocketHandler;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 
-import pt.up.fe.dceg.neptus.imc.IMCInputStream;
-import pt.up.fe.dceg.neptus.imc.IMCMessage;
-import pt.up.fe.dceg.neptus.imc.IMCOutputStream;
-
 @WebSocket(maxMessageSize = 64 * 1024)
 public class ImcProxyServer {
 

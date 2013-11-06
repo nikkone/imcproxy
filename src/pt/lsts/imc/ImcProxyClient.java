@@ -11,11 +11,9 @@ import java.util.Vector;
 
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
-import pt.up.fe.dceg.neptus.imc.Announce;
-import pt.up.fe.dceg.neptus.imc.IMCMessage;
-import pt.up.fe.dceg.neptus.imc.net.UDPTransport;
-import pt.up.fe.dceg.neptus.messages.listener.MessageInfo;
-import pt.up.fe.dceg.neptus.messages.listener.MessageListener;
+import pt.lsts.imc.net.UDPTransport;
+import pt.lsts.neptus.messages.listener.MessageInfo;
+import pt.lsts.neptus.messages.listener.MessageListener;
 
 
 @WebSocket
@@ -173,7 +171,7 @@ public class ImcProxyClient extends ImcClientSocket {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		new ImcProxyClient("37.139.9.28", 9090);
+		new ImcProxyClient("zpserver.info", 9090);
 	}
 	
 }
