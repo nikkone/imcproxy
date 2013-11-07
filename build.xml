@@ -42,6 +42,22 @@
 		</jar>
 	</target>
 	
+	<target name="imcproxy" depends="client.jar" description="Compile proxy client for Unix systems">
+		<exec command="bash">
+			<arg value="utils/jar2sh.sh"/>
+			<arg value="imcproxy"/>
+			<arg value="client.jar"/>
+		</exec>
+	</target>
+	
+	<target name="proxyserver" depends="server.jar" description="Compile proxy server for Unix systems">
+		<exec command="bash">
+			<arg value="utils/jar2sh.sh"/>
+			<arg value="imcproxy"/>
+			<arg value="server.jar"/>
+		</exec>
+	</target>
+	
 	<target name="dist" depends="client.jar,server.jar"/>
 	
 </project>
