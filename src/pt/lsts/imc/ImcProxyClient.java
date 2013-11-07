@@ -5,6 +5,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.URI;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Vector;
@@ -24,12 +26,11 @@ public class ImcProxyClient extends ImcClientSocket {
 	protected LinkedHashMap<Integer, InetSocketAddress> localImcHosts = new LinkedHashMap<>();
 	protected LinkedHashMap<Integer, UDPTransport> remoteImcHosts = new LinkedHashMap<>();
 	protected UDPTransport discovery;
-	
+	protected static SimpleDateFormat format = new SimpleDateFormat("[YYYY-MM-dd, HH:mm:ss] ");
 	public UDPTransport createImcUdpHost(int startPort) {
 		int port = startPort;
 		UDPTransport transport; 
         while (true) {
-            System.out.println("[IMCTransport] Trying to bind to port " + port + "...");
             transport = new UDPTransport(port, 1);
             if (transport.isOnBindError())
                 port++;                            
@@ -43,7 +44,6 @@ public class ImcProxyClient extends ImcClientSocket {
         transport.addMessageListener(new MessageListener<MessageInfo, IMCMessage>() {
         	@Override
         	public void onMessage(MessageInfo info, IMCMessage msg) {
-        		//System.out.println(msg.getAbbrev()+" from "+info.getPublisher());
         		if (msg instanceof Announce) {
         			if (info.getPublisher().equals("127.0.0.1")) // ignore announces from loopback
         				return;	
@@ -78,6 +78,11 @@ public class ImcProxyClient extends ImcClientSocket {
 	public ImcProxyClient(String serverHost, int serverPort) throws Exception {
 		connect(new URI("ws://"+serverHost+":"+serverPort));
 		discovery = createImcUdpHost(30100);
+		console("Listening for Announces on port "+discovery.getBindPort());
+	}
+	
+	public static void console(String text) {
+		System.out.println(format.format(new Date())+text);
 	}
 	
 	@Override
@@ -91,6 +96,7 @@ public class ImcProxyClient extends ImcClientSocket {
 				remoteImcHosts.put(imcid, transport);
 				imcToPort.put(imcid, transport.getBindPort());
 				portToImc.put(transport.getBindPort(), imcid);
+				console("Remote "+msg.getString("sys_name")+" now visible at localhost:"+transport.getBindPort());
 			}
 			String[] services = msg.getString("services").split(";");
 			Vector<String> udpServices = new Vector<>();
@@ -171,7 +177,21 @@ public class ImcProxyClient extends ImcClientSocket {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		new ImcProxyClient("zpserver.info", 9090);
+		String host = "zpserver.info";
+		int port = 9090;
+		
+		if (args.length == 2) {
+			try {
+				port = Integer.parseInt(args[1]);
+				host = args[0];
+			}
+			catch (Exception e) {
+				System.out.println("Usage: ./imcproxy <host> <port>");
+				return;
+			}
+		}
+		ImcProxyClient.console("Connecting to server at "+host+":"+port);
+		new ImcProxyClient(host, port);		
 	}
 	
 }

@@ -4,6 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
 
 import org.eclipse.jetty.server.Server;
@@ -20,10 +22,11 @@ import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 public class ImcProxyServer {
 
 	private static HashSet<Session> activeSessions = new HashSet<>();
-
+	private static SimpleDateFormat format = new SimpleDateFormat("[YYYY-MM-dd, HH:mm:ss] ");
+	
 	@OnWebSocketConnect
 	public void onConnect(Session session) {
-		System.out.println("New connection from " + session.getRemoteAddress());
+		console("New connection from " + session.getRemoteAddress());
 		synchronized (activeSessions) {
 			activeSessions.add(session);	
 		}		
@@ -31,7 +34,7 @@ public class ImcProxyServer {
 
 	@OnWebSocketClose
 	public void onDisconnect(Session session, int statusCode, String reason) {
-		System.out.println("Connection from " + session.getRemoteAddress()
+		console("Connection from " + session.getRemoteAddress()
 				+ " has ended: " + reason);
 		synchronized (activeSessions) {
 			activeSessions.remove(session);
@@ -41,7 +44,7 @@ public class ImcProxyServer {
 	@OnWebSocketError
 	public void onError(Session session, Throwable error) {
 		if (session != null)
-			System.err.println("Error handling " + session.getRemoteAddress()
+			console("ERROR: handling " + session.getRemoteAddress()
 					+ ": ");
 		error.printStackTrace();
 	}
@@ -49,7 +52,7 @@ public class ImcProxyServer {
 	@OnWebSocketMessage
 	public void onBinary(Session session, byte buff[], int offset, int length) {
 		if (!session.isOpen()) {
-			System.err.println("Session is closed");
+			console("ERROR: Session is closed");
 			return;
 		}
 
@@ -79,7 +82,7 @@ public class ImcProxyServer {
 	}
 
 	public void onMessage(Session session, IMCMessage message) {
-		System.out.println("Got " + message.getAbbrev() + " from "
+		console("Got " + message.getAbbrev() + " from "
 				+ session.getRemoteAddress());
 		try {
 			ByteBuffer buff = wrap(message);
@@ -90,7 +93,7 @@ public class ImcProxyServer {
 			}
 			for (Session sess : sessionsCopy) {
 				if (sess != session) {
-					System.out.println("\t--> " + sess.getRemoteAddress());
+					console("\t--> " + sess.getRemoteAddress());
 					sess.getRemote().sendBytes(buff);
 				}
 			}
@@ -98,9 +101,24 @@ public class ImcProxyServer {
 			e.printStackTrace();
 		}
 	}
+	
+	public void console(String text) {
+		System.out.println(format.format(new Date())+text);
+	}
 
 	public static void main(String[] args) {
-		Server server = new Server(9090);
+		Server server;
+		int port = 9090;
+		if (args.length > 0) {
+			try {
+				port = Integer.parseInt(args[0]);
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+				return;
+			}
+		}
+		server = new Server(port);
 		server.setHandler(new WebSocketHandler() {
 			@Override
 			public void configure(WebSocketServletFactory arg0) {
@@ -109,7 +127,7 @@ public class ImcProxyServer {
 		});
 		try {
 			server.start();
-			System.out.println("Server listening on port " + 9090);
+			System.out.println(ImcProxyServer.format.format(new Date())+"Server listening on port " + port);
 			server.join();
 
 		} catch (Exception e) {
