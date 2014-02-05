@@ -192,6 +192,5 @@ public class ImcProxyClient extends ImcClientSocket {
 		}
 		ImcProxyClient.console("Connecting to server at "+host+":"+port);
 		new ImcProxyClient(host, port);		
-	}
-	
+	}	
 }

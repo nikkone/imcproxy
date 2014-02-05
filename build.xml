@@ -53,7 +53,7 @@
 	<target name="proxyserver" depends="server.jar" description="Compile proxy server for Unix systems">
 		<exec command="bash">
 			<arg value="utils/jar2sh.sh"/>
-			<arg value="imcproxy"/>
+			<arg value="proxyserver"/>
 			<arg value="server.jar"/>
 		</exec>
 	</target>
