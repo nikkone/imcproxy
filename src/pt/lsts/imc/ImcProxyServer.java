@@ -66,7 +66,7 @@ public class ImcProxyServer {
 
 	public static IMCMessage deserialize(byte[] buff, int offset, int length) throws IOException {
 		IMCInputStream iis = new IMCInputStream(new ByteArrayInputStream(
-				buff, offset, length));
+				buff, offset, length), IMCDefinition.getInstance());
 		IMCMessage msg = iis.readMessage();			
 		iis.close();
 		return msg;
