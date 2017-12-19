@@ -177,7 +177,7 @@ public class ImcProxyClient extends ImcClientSocket {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		String host = "zpserver.info";
+		String host = "necsave.info";
 		int port = 9090;
 		
 		if (args.length == 2) {
