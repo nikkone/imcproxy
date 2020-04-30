@@ -18,13 +18,16 @@ import pt.lsts.imc.IMCMessage;
 @WebSocket
 public class ImcToInfluxDB extends ImcClientSocket {
 	protected static SimpleDateFormat format = new SimpleDateFormat("[YYYY-MM-dd, HH:mm:ss] ");
+	protected static String influxhost = "http://localhost";
+	protected static int influxport = 8086;
+	
     public void httpPostImcToInfluxDB(IMCMessage message) {
 		String messageLineProtocol = ImcToInfluxDB.imcToInfluxLineProtocol(message);
 		if(messageLineProtocol != "") {
 	    	try {
 				System.out.println("Writing to DB: " + message.getAbbrev());
 				// Connect
-				URL url = new URL("http://192.168.2.172:8086/write?db=mydb&precision=ms");
+				URL url = new URL(influxhost + ":" + influxport + "/write?db=mydb&precision=ms");
 				URLConnection con = url.openConnection();
 				HttpURLConnection http = (HttpURLConnection)con;
 				http.setRequestMethod("POST"); // PUT is another valid option
@@ -61,6 +64,7 @@ public class ImcToInfluxDB extends ImcClientSocket {
     		case "Temperature":
     		case "FuelLevel":
     		case "SetThrusterActuation":
+    		case "GpsFix":
     		case "EstimatedState":        	
     			Boolean first = true;
         		out = message.getAbbrev() + ",src="+ message.getSrc() + ",ent=" + message.getSrcEnt() + " ";
@@ -72,6 +76,11 @@ public class ImcToInfluxDB extends ImcClientSocket {
         				out += ",";
         			}
         			out += entry.getKey() + "=" + entry.getValue();
+        			if(entry.getKey().equals("lat") || entry.getKey().equals("lon")) { // Radians to Degrees  for lat and lon
+        				System.out.println("Lat or Lon added");
+        				out += "," + entry.getKey() + "deg=" + (double)(entry.getValue())*(180/Math.PI);
+        				
+        			}
         		}
         		out += "  " + message.getTimestampMillis();
         		//System.out.println("Wrote to InfluxDB: " + message.getAbbrev());
@@ -100,7 +109,18 @@ public class ImcToInfluxDB extends ImcClientSocket {
 		String host = "zpserver.info";
 		int port = 9090;
 		
-		if (args.length == 2) {
+		if (args.length == 4) {
+			try {
+				port = Integer.parseInt(args[1]);
+				host = args[0];
+				influxport = Integer.parseInt(args[3]);
+				influxhost = args[2];
+			}
+			catch (Exception e) {
+				System.out.println("Usage: ./imcplot <host> <port> <influxhost> <influxport>");
+				return;
+			}
+		} else if (args.length == 2) {
 			try {
 				port = Integer.parseInt(args[1]);
 				host = args[0];
@@ -109,8 +129,9 @@ public class ImcToInfluxDB extends ImcClientSocket {
 				System.out.println("Usage: ./imcplot <host> <port>");
 				return;
 			}
-		}
-		ImcToInfluxDB.console("Connecting to server at "+host+":"+port);
+		} 
+		ImcToInfluxDB.console("Connecting to IMCProxy server at "+host+":"+port);
+		ImcToInfluxDB.console("Using InfluxDB server at "+influxhost+":"+influxport);
 		new ImcToInfluxDB(host, port);		
 	}	
 }
