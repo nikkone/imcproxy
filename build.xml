@@ -42,6 +42,20 @@
 		</jar>
 	</target>
 	
+	<target name="toinflux.jar" depends="compile">
+		<unzip dest="build">
+			<fileset dir="lib" casesensitive="false">
+				<include name="**/*.jar" />
+			</fileset>
+		</unzip>
+		<delete dir="build/META-INF"/>
+		<jar destfile="toinflux.jar" basedir="build" index="true">
+			<manifest>
+				<attribute name="Main-Class" value="pt.lsts.imc.ImcToInfluxDB"/>
+			</manifest>
+		</jar>
+	</target>
+	
 	<target name="imcproxy" depends="client.jar" description="Compile proxy client for Unix systems">
 		<exec command="bash">
 			<arg value="utils/jar2sh.sh"/>
@@ -58,6 +72,14 @@
 		</exec>
 	</target>
 	
-	<target name="dist" depends="client.jar,server.jar"/>
+	<target name="toinflux" depends="toinflux.jar" description="Compile toinflux for Unix systems">
+		<exec command="bash">
+			<arg value="utils/jar2sh.sh"/>
+			<arg value="toinflux"/>
+			<arg value="toinflux.jar"/>
+		</exec>
+	</target>
+	
+	<target name="dist" depends="client.jar,server.jar,toinflux.jar"/>
 	
 </project>
