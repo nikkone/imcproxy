@@ -20,14 +20,15 @@ public class ImcToInfluxDB extends ImcClientSocket {
 	protected static SimpleDateFormat format = new SimpleDateFormat("[YYYY-MM-dd, HH:mm:ss] ");
 	protected static String influxhost = "http://localhost";
 	protected static int influxport = 8086;
-	
+	protected static String dbname = "imc";
+
     public void httpPostImcToInfluxDB(IMCMessage message) {
 		String messageLineProtocol = ImcToInfluxDB.imcToInfluxLineProtocol(message);
 		if(messageLineProtocol != "") {
 	    	try {
 				System.out.println("Writing to DB: " + message.getAbbrev());
 				// Connect
-				URL url = new URL(influxhost + ":" + influxport + "/write?db=mydb&precision=ms");
+				URL url = new URL(influxhost + ":" + influxport + "/write?db=" + dbname + "&precision=ms");
 				URLConnection con = url.openConnection();
 				HttpURLConnection http = (HttpURLConnection)con;
 				http.setRequestMethod("POST"); // PUT is another valid option
@@ -106,18 +107,20 @@ public class ImcToInfluxDB extends ImcClientSocket {
 		System.out.println(format.format(new Date())+text);
 	}
 	public static void main(String[] args) throws Exception {
-		String host = "zpserver.info";
+		String host = "otter.itk.ntnu.no";
 		int port = 9090;
 		
-		if (args.length == 4) {
+		if (args.length == 5) {
 			try {
 				port = Integer.parseInt(args[1]);
 				host = args[0];
 				influxport = Integer.parseInt(args[3]);
 				influxhost = args[2];
+				influxhost = args[4];
 			}
 			catch (Exception e) {
-				System.out.println("Usage: ./imcplot <host> <port> <influxhost> <influxport>");
+				System.out.println("Usage: ./imcplot <host> <port> or ");
+				System.out.println("Usage: ./imcplot <host> <port> <influxhost> <influxport> <dbname>");
 				return;
 			}
 		} else if (args.length == 2) {
@@ -126,12 +129,13 @@ public class ImcToInfluxDB extends ImcClientSocket {
 				host = args[0];
 			}
 			catch (Exception e) {
-				System.out.println("Usage: ./imcplot <host> <port>");
+				System.out.println("Usage: ./imcplot <host> <port> or ");
+				System.out.println("Usage: ./imcplot <host> <port> <influxhost> <influxport> <dbname>");
 				return;
 			}
 		} 
 		ImcToInfluxDB.console("Connecting to IMCProxy server at "+host+":"+port);
-		ImcToInfluxDB.console("Using InfluxDB server at "+influxhost+":"+influxport);
+		ImcToInfluxDB.console("Using InfluxDB server at "+influxhost+":"+influxport + ",db:" + dbname);
 		new ImcToInfluxDB(host, port);		
-	}	
+	}		
 }
