@@ -66,6 +66,8 @@ public class ImcToInfluxDB extends ImcClientSocket {
     		case "FuelLevel":
     		case "SetThrusterActuation":
     		case "GpsFix":
+    		case "TBRFishTag":
+    		case "TBRSensor":
     		case "EstimatedState":        	
     			Boolean first = true;
         		out = message.getAbbrev() + ",src="+ message.getSrc() + ",ent=" + message.getSrcEnt() + " ";
