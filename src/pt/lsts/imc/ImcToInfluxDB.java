@@ -63,7 +63,6 @@ public class ImcToInfluxDB extends ImcClientSocket {
     		case "Voltage":
     		case "Current":
     		case "Temperature":
-    		case "FuelLevel":
     		case "SetThrusterActuation":
     		case "GpsFix":
     		case "TBRFishTag":
@@ -82,7 +81,7 @@ public class ImcToInfluxDB extends ImcClientSocket {
 
 				// Special tags
 				if(mp.containsKey("id")) {
-					System.out.println("Contains id");
+					//System.out.println("Contains id");
 					out += ",id=" + mp.get("id");
 				}
 				//End tag section
@@ -105,10 +104,16 @@ public class ImcToInfluxDB extends ImcClientSocket {
         				
         			}
         		}
+    		case "FuelLevel": // Special mode to avoid the tupple list
+				out = message.getAbbrev() + ",src="+ message.getSrc() + ",ent=" + message.getSrcEnt();
+				Map<String, Object> mpf = message.getValues();
+				if(mpf.containsKey("value")) {
+					out += " value=" + mpf.get("value");
+				}
 
 				// Add timestamp to message
         		out += "  " + message.getTimestampMillis();
-        		System.out.println("InfluxDB message: " + message.getAbbrev());
+        		//System.out.println("InfluxDB message: " + message.getAbbrev());
         		break;
 
         	// Return empty for all messages not explicitly mentioned
