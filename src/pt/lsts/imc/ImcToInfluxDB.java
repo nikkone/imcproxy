@@ -68,10 +68,29 @@ public class ImcToInfluxDB extends ImcClientSocket {
     		case "GpsFix":
     		case "TBRFishTag":
     		case "TBRSensor":
+			case "EulerAngles":
+			case "DesiredSpeed":
+			case "DesiredHeading":
+			case "CpuUsage":
+			case "AngularVelocity":
+			case "RemoteSensorInfo":
     		case "EstimatedState":        	
-    			Boolean first = true;
-        		out = message.getAbbrev() + ",src="+ message.getSrc() + ",ent=" + message.getSrcEnt() + " ";
-        		Map<String, Object> mp = message.getValues();
+    			
+				//Add src and entity as tags (indexed)
+        		out = message.getAbbrev() + ",src="+ message.getSrc() + ",ent=" + message.getSrcEnt();
+				Map<String, Object> mp = message.getValues();
+
+				// Special tags
+				if(mp.containsKey("id")) {
+					System.out.println("Contains id");
+					out += ",id=" + mp.get("id");
+				}
+				//End tag section
+        		out += " ";
+
+				// Add all other variables of the message as fields(non-indexed)
+				Boolean first = true;
+				
         		for (Map.Entry<String, Object> entry : mp.entrySet()) {
         			if(first) {
         				first = false;
@@ -79,17 +98,21 @@ public class ImcToInfluxDB extends ImcClientSocket {
         				out += ",";
         			}
         			out += entry.getKey() + "=" + entry.getValue();
-        			if(entry.getKey().equals("lat") || entry.getKey().equals("lon")) { // Radians to Degrees  for lat and lon
+					// Radians to Degrees  for lat and lon
+        			if(entry.getKey().equals("lat") || entry.getKey().equals("lon")) {
         				System.out.println("Lat or Lon added");
         				out += "," + entry.getKey() + "deg=" + (double)(entry.getValue())*(180/Math.PI);
         				
         			}
         		}
+
+				// Add timestamp to message
         		out += "  " + message.getTimestampMillis();
-        		//System.out.println("Wrote to InfluxDB: " + message.getAbbrev());
+        		System.out.println("InfluxDB message: " + message.getAbbrev());
         		break;
-        		
-    		default:
+
+        	// Return empty for all messages not explicitly mentioned
+    		default: 
     			out = "";
     	}
     	return out;
