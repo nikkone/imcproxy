@@ -56,7 +56,7 @@ public class ImcProxyClient extends ImcClientSocket {
         						localImcHosts.put(msg.getSrc(), new InetSocketAddress(parts[1], Integer.parseInt(parts[2])));
         					}
         					catch (Exception e) {
-        						
+        						e.printStackTrace();
         					}
         				}
         			}
@@ -65,7 +65,9 @@ public class ImcProxyClient extends ImcClientSocket {
         				sendMessage(msg);
         			}
         			catch (Exception e) {
+						console("Restart needed");
         				e.printStackTrace();
+						System.exit(-1);
         			}
         		}
         		else
@@ -133,6 +135,7 @@ public class ImcProxyClient extends ImcClientSocket {
                     remoteImcHosts.get(imcid).sendMessage("224.0.75.69", p, msg);								
 			}
 			catch (Exception e) {
+				console("3");
 				e.printStackTrace();
 			}
 			return;
@@ -159,6 +162,7 @@ public class ImcProxyClient extends ImcClientSocket {
 			sendMessage(message);
 		}
 		catch (Exception e) {
+			console("4");
 			e.printStackTrace();
 		}
 	}
