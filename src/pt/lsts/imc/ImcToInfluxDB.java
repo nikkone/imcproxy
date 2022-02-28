@@ -42,6 +42,8 @@ public class ImcToInfluxDB extends ImcClientSocket {
 				http.connect();
 				try(OutputStream os = http.getOutputStream()) {
 				    os.write(out);
+					int code = http.getResponseCode();
+					System.out.println(code);
 				} catch (Exception e) {
 					System.out.println("err while writing db first");
 					return;
@@ -104,6 +106,8 @@ public class ImcToInfluxDB extends ImcClientSocket {
         				
         			}
         		}
+				out += "  " + message.getTimestampMillis();
+				break;
     		case "FuelLevel": // Special mode to avoid the tupple list
 				out = message.getAbbrev() + ",src="+ message.getSrc() + ",ent=" + message.getSrcEnt();
 				Map<String, Object> mpf = message.getValues();
